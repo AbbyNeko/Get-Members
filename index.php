@@ -1,118 +1,146 @@
 <?php
+//sets content type to JSON
+header('Content-Type: application/json');
 
 //Grabbed data from URL
 $senateMembers = simplexml_load_file("https://www.senate.gov/general/contact_information/senators_cfm.xml");
 
-//array of full state names to respective state abbreviations
-$states = array(
-    "AL"=> "Alabama",
-    "AK"=> "Alaska",
-    "AS"=> "American Samoa",
-    "AZ"=> "Arizona",
-    "AR"=> "Arkansas",
-    "CA"=> "California",
-    "CO"=> "Colorado",
-    "CT"=> "Connecticut",
-    "DE"=> "Delaware",
-    "DC"=> "District Of Columbia",
-    "FM"=> "Federated States Of Micronesia",
-    "FL"=> "Florida",
-    "GA"=> "Georgia",
-    "GU"=> "Guam",
-    "HI"=> "Hawaii",
-    "ID"=> "Idaho",
-    "IL"=> "Illinois",
-    "IN"=> "Indiana",
-    "IA"=> "Iowa",
-    "KS"=> "Kansas",
-    "KY"=> "Kentucky",
-    "LA"=> "Louisiana",
-    "ME"=> "Maine",
-    "MH"=> "Marshall Islands",
-    "MD"=> "Maryland",
-    "MA"=> "Massachusetts",
-    "MI"=> "Michigan",
-    "MN"=> "Minnesota",
-    "MS"=> "Mississippi",
-    "MO"=> "Missouri",
-    "MT"=> "Montana",
-    "NE"=> "Nebraska",
-    "NV"=> "Nevada",
-    "NH"=> "New Hampshire",
-    "NJ"=> "New Jersey",
-    "NM"=> "New Mexico",
-    "NY"=> "New York",
-    "NC"=> "North Carolina",
-    "ND"=> "North Dakota",
-    "MP"=> "Northern Mariana Islands",
-    "OH"=> "Ohio",
-    "OK"=> "Oklahoma",
-    "OR"=> "Oregon",
-    "PW"=> "Palau",
-    "PA"=> "Pennsylvania",
-    "PR"=> "Puerto Rico",
-    "RI"=> "Rhode Island",
-    "SC"=> "South Carolina",
-    "SD"=> "South Dakota",
-    "TN"=> "Tennessee",
-    "TX"=> "Texas",
-    "UT"=> "Utah",
-    "VT"=> "Vermont",
-    "VI"=> "Virgin Islands",
-    "VA"=> "Virginia",
-    "WA"=> "Washington",
-    "WV"=> "West Virginia",
-    "WI"=> "Wisconsin",
-    "WY"=> "Wyoming"
-);
+//searching for the state part of the address using the state list and returning state abbreviation
+function getState($fullAddress) {
+
+    //array of full state names to respective state abbreviations
+    $states = array(
+        "AL",
+        "AK",
+        "AS",
+        "AZ",
+        "AR",
+        "CA",
+        "CO",
+        "CT",
+        "DE",
+        "DC",
+        "FM",
+        "FL",
+        "GA",
+        "GU",
+        "HI",
+        "ID",
+        "IL",
+        "IN",
+        "IA",
+        "KS",
+        "KY",
+        "LA",
+        "ME",
+        "MH",
+        "MD",
+        "MA",
+        "MI",
+        "MN",
+        "MS",
+        "MO",
+        "MT",
+        "NE",
+        "NV",
+        "NH",
+        "NJ",
+        "NM",
+        "NY",
+        "NC",
+        "ND",
+        "MP",
+        "OH",
+        "OK",
+        "OR",
+        "PW",
+        "PA",
+        "PR",
+        "RI",
+        "SC",
+        "SD",
+        "TN",
+        "TX",
+        "UT",
+        "VT",
+        "VI",
+        "VA",
+        "WA",
+        "WV",
+        "WI",
+        "WY"
+    );
+
+    foreach($states as $state) {
+        $stateMatch = preg_match('/('.strval($state).')/', $fullAddress);
+        if($stateMatch){
+            return strval($state);
+            break;
+        }
+    }
+
+}
 
 //Loops through each XML node and creates an object in an array for each member
 foreach($senateMembers->children() as $member) {
 
     try {
 
-        /*
-        $state = $member->state;
-        //get full state name
-        $stateName = $states[strval($state)];
+        
+        $state = strval($member->state);
+        $addrObj = "";
 
         if(isset($member->address)) {
 
-            $fullAddress = $member->address;
-            $splitAddress = explode(strval($stateName), strval($fullAddress));
-            $street = $splitAddress[0];
+            $fullAddress = strval($member->address);
 
-            $cityZipSplit = explode(' ', strval($splitAddress[1]));
-            $city = $cityZipSplit[0];
-            $zip = $cityZipSplit[1];
+            //searching for the state part of the address using the state list
+            $stateName = getState($fullAddress);
+
+            $city = "Washington";
+
+            //splitting address by city and state to locate street and zip
+            $splitAddr1 = explode($city, $fullAddress);
+            $splitAddr2 = explode($stateName, $fullAddress);
+
+            $street = $splitAddr1[0];
+            $zip = $splitAddr2[1];
+
+            $addrObj = array(
+                "street"=>trim($street),
+                "state"=>$stateName,
+                "city"=>$city,
+                "postal"=>trim($zip)
+            );
 
         }
-        */
+
+        //print_r($addrObj);
 
         $firstName = strval($member->first_name);
         $lastName = strval($member->last_name);
         $fullName = strval($member->member_full);
         $chartId = strval($member->bioguide_id);
         $phone = strval($member->phone);
-
+        $address = $addrObj;
 
         $memberArr[] = array(
-            'firstName'=>$firstName, 
-            'lastName'=>$lastName,
-            'fullName'=>$fullName,
-            'chartId'=>$chartId,
-            'mobile'=>$phone
+            "firstName"=>$firstName, 
+            "lastName"=>$lastName,
+            "fullName"=>$fullName,
+            "chartId"=>$chartId,
+            "mobile"=>$phone,
+            "address"=>$addrObj
         );
-
 
     } catch(Exception $e) {
         throw $e;
     }
 }
 
-$memberJSON = json_encode($memberArr);
+$memberJSON = json_encode($memberArr, JSON_PRETTY_PRINT);
 
+//prints JSON to screen
 echo $memberJSON;
-
 
 ?>
