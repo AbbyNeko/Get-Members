@@ -97,14 +97,18 @@ foreach($senateMembers->children() as $member) {
             //searching for the state part of the address using the state list
             $stateName = getState($fullAddress);
 
-            $city = "Washington";
+            //split address string before state to get city
+            $splitAddr1 = explode($stateName, $fullAddress);
+            $firstPart = trim($splitAddr1[0]);
+            //get last word from first part of address
+            $city = end(explode(' ', $firstPart));
 
             //splitting address by city and state to locate street and zip
-            $splitAddr1 = explode($city, $fullAddress);
-            $splitAddr2 = explode($stateName, $fullAddress);
+            $splitAddr2 = explode($city, $fullAddress);
+            $splitAddr3 = explode($stateName, $fullAddress);
 
-            $street = $splitAddr1[0];
-            $zip = $splitAddr2[1];
+            $street = $splitAddr2[0];
+            $zip = $splitAddr3[1];
 
             $addrObj = array(
                 "street"=>trim($street),
