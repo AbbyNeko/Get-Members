@@ -66,8 +66,7 @@ $states = array(
     "WY"=> "Wyoming"
 );
 
-$pastFirst = false;
-
+//Loops through each XML node and creates an object in an array for each member
 foreach($senateMembers->children() as $member) {
 
     try {
