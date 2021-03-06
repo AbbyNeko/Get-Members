@@ -123,7 +123,7 @@ foreach($senateMembers->children() as $member) {
 
         $firstName = strval($member->first_name);
         $lastName = strval($member->last_name);
-        $fullName = strval($member->member_full);
+        $fullName = $firstName.' '.$lastName;
         $chartId = strval($member->bioguide_id);
         $phone = strval($member->phone);
         $address = $addrObj;
